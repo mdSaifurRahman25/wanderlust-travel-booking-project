@@ -15,7 +15,11 @@ The frontend is a Next.js travel-booking app under `src/app/`; the Express and M
 - Use `frontend/README.md` for local startup instructions and the frontend/backend API endpoints.
 - Static frontend assets live in `public/images/` and are referenced as `/images/...`. Destination fallback images are in `public/images/destinations/`; the original design resources remain in `b14-wanderlust-resources/assets/`.
 - The destinations page fetches destination records from the backend and renders/filter/sorts them in `src/components/destinations/DestinationBrowser.tsx`.
-- Shared destination and filter data types belong in `src/types/index.ts`; reuse these types rather than redefining destination shapes in components.
+- Destination detail routes live at `src/app/destinations/[id]/page.tsx`. They fetch `/destinations/:id` and expect the backend JSON shape `{ result: Destination | null }`.
+- Cards link to a detail route using the MongoDB `_id` (or fallback `id`) when available. Keep route IDs URL-encoded and preserve the `ObjectId` string form returned by MongoDB.
+- Shared destination, API response, and filter types belong in `src/types/index.ts`; reuse these types rather than redefining destination shapes in components.
+- Detail-page fields such as `reviewCount` and `highlights` are optional. Do not invent service guarantees or review counts when the API does not provide them; use truthful fallbacks based on available destination data.
+- The detail page's Edit and Book Now controls are intentionally disabled until those workflows exist. Keep them disabled unless the corresponding functionality is implemented.
 - The frontend uses npm and `package-lock.json`. Do not commit environment files or database credentials.
 
 ## Stack and conventions
