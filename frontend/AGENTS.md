@@ -17,9 +17,10 @@ The frontend is a Next.js travel-booking app under `src/app/`; the Express and M
 - The destinations page fetches destination records from the backend and renders/filter/sorts them in `src/components/destinations/DestinationBrowser.tsx`.
 - Destination detail routes live at `src/app/destinations/[id]/page.tsx`. They fetch `/destinations/:id` and expect the backend JSON shape `{ result: Destination | null }`.
 - Cards link to a detail route using the MongoDB `_id` (or fallback `id`) when available. Keep route IDs URL-encoded and preserve the `ObjectId` string form returned by MongoDB.
+- `src/components/destinations/EditDestinationDialog.tsx` receives the current `Destination`, pre-fills its form, and updates it with `PUT /destinations/:id`. The backend expects the destination fields as JSON and returns `{ result: Destination }`; refresh the route after a successful update.
 - Shared destination, API response, and filter types belong in `src/types/index.ts`; reuse these types rather than redefining destination shapes in components.
 - Detail-page fields such as `reviewCount` and `highlights` are optional. Do not invent service guarantees or review counts when the API does not provide them; use truthful fallbacks based on available destination data.
-- The detail page's Edit and Book Now controls are intentionally disabled until those workflows exist. Keep them disabled unless the corresponding functionality is implemented.
+- The Edit dialog is implemented. Booking is not yet implemented; do not make the Book Now control actionable until a booking workflow exists.
 - The frontend uses npm and `package-lock.json`. Do not commit environment files or database credentials.
 
 ## Stack and conventions
