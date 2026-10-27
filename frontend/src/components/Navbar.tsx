@@ -9,8 +9,8 @@ import { useState } from "react";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/destinations", label: "Destinations" },
+  {href: "/add-destination", label: "Add Destination"},
   { href: "/my-bookings", label: "My Bookings" },
-  { href: "/admin", label: "Admin" },
 ];
 
 const accountLinks = [

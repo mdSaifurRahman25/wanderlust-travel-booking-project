@@ -1,13 +1,17 @@
 "use client";
 
-import type { FormEvent } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { format } from "date-fns";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const fieldClasses =
     "h-[26px] rounded-[4px] border-[#e5e7eb] bg-[#f9fafb] px-3 text-sm text-[#111827] shadow-none placeholder:text-[#9ca3af] focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/20";
@@ -24,9 +28,42 @@ const categories = [
     "Wildlife",
 ];
 
+const currentYear = new Date().getFullYear();
+const startMonth = new Date(currentYear, 0, 1);
+const endMonth = new Date(currentYear + 5, 11, 31);
+
 export default function AddDestinationPage() {
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    const [departureDate, setDepartureDate] = useState<Date | undefined>();
+    const [calendarOpen, setCalendarOpen] = useState(false);
+    const [requestError, setRequestError] = useState<string | null>(null);
+
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        setRequestError(null);
+        const form = Object.fromEntries(new FormData(event.currentTarget).entries());
+
+        try {
+            const response = await fetch("http://localhost:8000/add-destination", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(form),
+            });
+
+            const data: unknown = await response.json();
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+
+            console.log(data, "from add-destination page");
+        } catch (error) {
+            setRequestError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to submit the travel package."
+            );
+        }
     }
 
     return (
@@ -116,11 +153,86 @@ export default function AddDestinationPage() {
                             <Label htmlFor="departure-date" className={labelClasses}>
                                 Departure Date
                             </Label>
-                            <Input
-                                id="departure-date"
+                            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                <PopoverTrigger
+                                    render={
+                                        <button
+                                            type="button"
+                                            id="departure-date"
+                                            className={cn(
+                                                fieldClasses,
+                                                "flex w-full cursor-pointer items-center justify-between gap-2 text-left outline-none",
+                                                !departureDate && "text-[#9ca3af]"
+                                            )}
+                                        >
+                                            <span className="min-w-0 flex-1 truncate">
+                                                {departureDate
+                                                    ? format(departureDate, "MM/dd/yyyy")
+                                                    : "mm/dd/yyyy"}
+                                            </span>
+                                            <CalendarIcon
+                                                className="size-4 shrink-0 text-[#9ca3af]"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    }
+                                />
+                                <PopoverContent
+                                    align="start"
+                                    sideOffset={6}
+                                    aria-label="Select departure date"
+                                    className="w-auto gap-0 p-0 [--primary:#15a1bf] [--primary-foreground:#ffffff]"
+                                >
+                                    <Calendar
+                                        mode="single"
+                                        selected={departureDate}
+                                        defaultMonth={departureDate}
+                                        captionLayout="dropdown"
+                                        startMonth={startMonth}
+                                        endMonth={endMonth}
+                                        formatters={{
+                                            formatMonthDropdown: (date) => format(date, "LLLL"),
+                                        }}
+                                        onSelect={(date) => {
+                                            if (date) {
+                                                setDepartureDate(date);
+                                                setCalendarOpen(false);
+                                            }
+                                        }}
+                                    />
+                                    <div className="flex items-center justify-between border-t border-[#e5e7eb] px-3 py-2">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-auto px-0 text-sm font-medium text-brand hover:bg-transparent hover:text-brand-strong"
+                                            onClick={() => {
+                                                setDepartureDate(undefined);
+                                                setCalendarOpen(false);
+                                            }}
+                                        >
+                                            Clear
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-auto px-0 text-sm font-medium text-brand hover:bg-transparent hover:text-brand-strong"
+                                            onClick={() => {
+                                                setDepartureDate(new Date());
+                                                setCalendarOpen(false);
+                                            }}
+                                        >
+                                            Today
+                                        </Button>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                            <input
+                                type="hidden"
                                 name="departureDate"
-                                placeholder="mm/dd/yyyy"
-                                className={fieldClasses}
+                                value={departureDate ? format(departureDate, "yyyy-MM-dd") : ""}
+                                readOnly
                             />
                         </div>
 
@@ -150,6 +262,12 @@ export default function AddDestinationPage() {
                             />
                         </div>
                     </div>
+
+                    {requestError && (
+                        <p role="alert" className="mt-4 text-sm text-red-600">
+                            Could not add the travel package: {requestError}
+                        </p>
+                    )}
 
                     <div className="mt-6 flex justify-end gap-2">
                         <Button
