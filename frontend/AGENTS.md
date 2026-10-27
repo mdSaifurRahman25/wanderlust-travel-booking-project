@@ -10,11 +10,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Wanderlust travel booking
 
-Wanderlust travel-booking page. `src/app/page.tsx` is still the create-next-app placeholder; the design reference is in `b14-wanderlust-resources/` (`Wanderlust .fig`, `Wanderlust .penpot`, `assets/`). That folder is gitignored and exists only locally.
+The frontend is a Next.js travel-booking app under `src/app/`; the Express and MongoDB backend is in the repository's `backend/` directory. The design reference is in the locally available `b14-wanderlust-resources/` folder; it is gitignored.
 
-- The README is mostly stock create-next-app boilerplate; the app lives under `src/app/`. Trust the configs and files over it.
-- Public assets live in `public/images/` — reference them as `/images/...`. The six destination images are not copied yet; they are only at `b14-wanderlust-resources/assets/destinations/` (copy to `public/images/destinations/` when needed).
-- npm only (`package-lock.json`). No monorepo, backend, API routes, database, auth, tests, CI, or formatter config.
+- Use `frontend/README.md` for local startup instructions and the frontend/backend API endpoints.
+- Static frontend assets live in `public/images/` and are referenced as `/images/...`. Destination fallback images are in `public/images/destinations/`; the original design resources remain in `b14-wanderlust-resources/assets/`.
+- The destinations page fetches destination records from the backend and renders/filter/sorts them in `src/components/destinations/DestinationBrowser.tsx`.
+- Shared destination and filter data types belong in `src/types/index.ts`; reuse these types rather than redefining destination shapes in components.
+- The frontend uses npm and `package-lock.json`. Do not commit environment files or database credentials.
 
 ## Stack and conventions
 
@@ -31,12 +33,14 @@ Wanderlust travel-booking page. `src/app/page.tsx` is still the create-next-app 
 | `npm run dev` | Dev server at http://localhost:3000 |
 | `npm run build` | Production build (Turbopack); passes on the starter |
 | `npx tsc --noEmit` | Typecheck; passes. No `typecheck` script |
-| `npm run lint` | ESLint; currently exits 1 |
+| `npm run lint` | ESLint; known existing hook lint errors are in generated `src/components/ui/carousel.tsx` and `src/hooks/use-mobile.ts` (`react-hooks/set-state-in-effect`) |
 
-`npm run lint` has two pre-existing errors in generated files: `src/components/ui/carousel.tsx` and `src/hooks/use-mobile.ts` (`react-hooks/set-state-in-effect`). Don't treat them as regressions. No test command exists.
+There is no frontend test script. Run focused ESLint checks on edited files when possible.
 
 ## Next.js 16 gotchas
 
-- `next.config.ts` enables `cacheComponents: true` and `partialPrefetching: true`. Data fetching is dynamic by default; cache explicitly with `use cache` / `cacheLife` / `cacheTag`. Don't add older route segment configs (`dynamic`, `revalidate`, `fetchCache`, `runtime`) or `experimental.ppr`; they are replaced or unsupported under Cache Components.
+- `next.config.ts` currently sets `cacheComponents: false` and `partialPrefetching: false`. Check the current config before relying on framework caching or partial prefetching behavior.
+- The destinations page is a Server Component and fetches the backend at request time with `cache: "no-store"` so destination changes are reflected on subsequent requests.
+- Don't add older route segment configs (`dynamic`, `revalidate`, `fetchCache`, `runtime`) or `experimental.ppr` without checking the bundled Next.js 16 documentation; APIs differ across Next versions.
 - Read the bundled version-specific docs before adding routing/data code: `node_modules/next/dist/docs/01-app/02-guides/adopting-partial-prefetching.md` and `node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/cacheComponents.md`.
 - `LayoutProps<"/">` and `PageProps<"/...">` are global generated types in Next 16 — no import needed.
