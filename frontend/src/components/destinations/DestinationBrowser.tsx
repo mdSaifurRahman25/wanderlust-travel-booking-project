@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight, CalendarDays, MapPin, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -187,12 +188,12 @@ export default function DestinationBrowser({
           {visibleDestinations.map(({ destination, fallbackImage }, index) => {
             const name = getName(destination);
             const price = getPrice(destination);
+            const destinationId = destination._id ?? destination.id;
 
             return (
               <article
                 key={
-                  destination._id ??
-                  destination.id ??
+                  destinationId ??
                   `${name}-${destination.country ?? "destination"}-${index}`
                 }
                 className="min-w-0"
@@ -218,9 +219,20 @@ export default function DestinationBrowser({
                 </div>
 
                 <div className="mt-1 flex items-baseline justify-between gap-2">
-                  <h2 className="truncate text-sm font-medium text-[#141414]">
-                    {name}
-                  </h2>
+                  {destinationId ? (
+                    <h2 className="truncate text-sm font-medium text-[#141414]">
+                      <Link
+                        href={`/destinations/${encodeURIComponent(destinationId)}`}
+                        className="hover:text-brand"
+                      >
+                        {name}
+                      </Link>
+                    </h2>
+                  ) : (
+                    <h2 className="truncate text-sm font-medium text-[#141414]">
+                      {name}
+                    </h2>
+                  )}
                   <p className="shrink-0 text-sm font-medium text-[#111]">
                     {formatPrice(price)}
                     {price !== null && (
@@ -240,10 +252,20 @@ export default function DestinationBrowser({
                   </span>
                 </p>
 
-                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium uppercase text-brand underline underline-offset-2">
-                  Book now
-                  <ArrowUpRight className="size-3" aria-hidden="true" />
-                </span>
+                {destinationId ? (
+                  <Link
+                    href={`/destinations/${encodeURIComponent(destinationId)}`}
+                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium uppercase text-brand underline underline-offset-2"
+                  >
+                    View details
+                    <ArrowUpRight className="size-3" aria-hidden="true" />
+                  </Link>
+                ) : (
+                  <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium uppercase text-brand underline underline-offset-2">
+                    View details
+                    <ArrowUpRight className="size-3" aria-hidden="true" />
+                  </span>
+                )}
               </article>
             );
           })}

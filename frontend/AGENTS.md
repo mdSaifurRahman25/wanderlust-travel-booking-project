@@ -95,6 +95,17 @@ PORT=8000
 - Do not commit `.env` files or database credentials.
 - The backend response shape is `{ result: Destination }` or `{ result: Destination | null }`, so frontend code should stay aligned with that contract.
 
+## Commit and push requirements
+
+When the user asks to commit and push, treat it as a full repository sync task:
+
+- Include all newly created, modified, and deleted files in the commit unless the user explicitly asks to exclude something.
+- Stage the repo as a whole, not only the files discussed in the current chat.
+- Push the result to every configured remote for this repository, including GitHub and GitLab, unless the user says otherwise.
+- Do not leave uncommitted changes behind when the user has asked for a commit/push workflow.
+- Preserve the repository state and avoid dropping unrelated user work while still ensuring the requested commit includes all relevant changes.
+- After pushing, confirm the remote update status for the repository remotes that are configured.
+
 
 | Command | Notes |
 | --- | --- |

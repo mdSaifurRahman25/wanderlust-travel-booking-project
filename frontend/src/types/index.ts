@@ -19,9 +19,15 @@ export type Destination = {
   imageUrl?: string;
   description?: string;
   rating?: number;
+  reviewCount?: number;
+  highlights?: string[];
 };
 
 export type DestinationApiResponse = Destination[];
+
+export type DestinationDetailApiResponse = {
+  result: Destination | null;
+};
 
 export type DestinationPriceRange =
   | "all"
