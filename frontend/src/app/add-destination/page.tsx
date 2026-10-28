@@ -12,6 +12,8 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const fieldClasses =
     "h-[26px] rounded-[4px] border-[#e5e7eb] bg-[#f9fafb] px-3 text-sm text-[#111827] shadow-none placeholder:text-[#9ca3af] focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/20";
@@ -36,6 +38,8 @@ export default function AddDestinationPage() {
     const [departureDate, setDepartureDate] = useState<Date | undefined>();
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [requestError, setRequestError] = useState<string | null>(null);
+    
+    const router = useRouter();
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -56,8 +60,11 @@ export default function AddDestinationPage() {
                 throw new Error(`Request failed with status ${response.status}`);
             }
 
+            toast.success("Destination Added successfully!");
+            router.push("/destinations")
             console.log(data, "from add-destination page");
         } catch (error) {
+            toast.error("Something Wrong!");
             setRequestError(
                 error instanceof Error
                     ? error.message
@@ -291,3 +298,4 @@ export default function AddDestinationPage() {
         </main>
     );
 }
+

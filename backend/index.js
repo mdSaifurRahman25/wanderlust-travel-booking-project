@@ -132,8 +132,16 @@ app.get("/destinations/:id", async (req, res) => {
     }
 });
 
-app.patch("/destinations/:id", (req, res) => {
-    
+app.patch("/destinations/:id", async (req, res) => {
+    // const {id} = req.params; 
+    const id = req.params.id; // collecting id from URL endpoint
+    const data = req.body; // collecting new data from frontend Form 
+
+    const result = await destinationCollection.updateOne(
+        {_id: new ObjectId(id)},
+        {$set: data}
+    ); 
+    res.send(result); 
 })
 
 

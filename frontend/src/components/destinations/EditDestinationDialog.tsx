@@ -23,6 +23,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Destination } from "@/types";
+import { toast } from "sonner";
+
+
 
 const categories = [
   "Beach",
@@ -107,8 +110,10 @@ export default function EditDestinationDialog({
       }
 
       setOpen(false);
+      toast.success("Destination updated successfully!");
       router.refresh();
     } catch (error) {
+      toast.error("Something wrong!");
       setRequestError(
         error instanceof Error ? error.message : "Unable to update destination."
       );
