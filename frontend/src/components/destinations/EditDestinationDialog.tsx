@@ -89,7 +89,7 @@ export default function EditDestinationDialog({
       const response = await fetch(
         `http://localhost:8000/destinations/${encodeURIComponent(destinationId)}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },

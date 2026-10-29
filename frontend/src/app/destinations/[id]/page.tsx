@@ -1,17 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarDays,
-  Check,
-  MapPin,
-  Star,
-  X,
+    ArrowLeft,
+    ArrowRight,
+    CalendarDays,
+    Check,
+    MapPin,
+    Star,
 } from "lucide-react";
 
 import type { DestinationDetailApiResponse } from "@/types";
 import EditDestinationDialog from "@/components/destinations/EditDestinationDialog";
+import DeleteDestinationDialog from "@/components/destinations/DeleteDestinationDialog";
 
 type DestinationDetailsPageProps = {
     params: Promise<{ id: string }>;
@@ -67,11 +67,11 @@ export default async function DestinationDetailsPage({
     const highlights = destination.highlights?.length
         ? destination.highlights
         : [
-              destination.duration && `Travel duration: ${destination.duration}`,
-              destination.category && `${destination.category} experience`,
-              destination.departureDate &&
-                  `Available departure: ${destination.departureDate}`,
-          ].filter((highlight): highlight is string => Boolean(highlight));
+            destination.duration && `Travel duration: ${destination.duration}`,
+            destination.category && `${destination.category} experience`,
+            destination.departureDate &&
+            `Available departure: ${destination.departureDate}`,
+        ].filter((highlight): highlight is string => Boolean(highlight));
 
     return (
         <main className="flex-1 bg-white">
@@ -86,13 +86,7 @@ export default async function DestinationDetailsPage({
                     </Link>
                     <div className="flex items-center gap-2">
                         <EditDestinationDialog destination={destination} />
-                        <Link
-                            href="/destinations"
-                            className="inline-flex h-8 items-center gap-2 border border-[#ef4444] px-3 text-xs text-[#ef4444] transition-colors hover:bg-[#fef2f2]"
-                        >
-                            <X className="size-3.5" aria-hidden="true" />
-                            Cancel
-                        </Link>
+                        <DeleteDestinationDialog id={id} />
                     </div>
                 </div>
 

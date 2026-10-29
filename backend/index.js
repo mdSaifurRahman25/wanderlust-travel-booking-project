@@ -4,7 +4,7 @@ import cors from 'cors';
 import 'dotenv/config';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
@@ -142,8 +142,30 @@ app.patch("/destinations/:id", async (req, res) => {
         {$set: data}
     ); 
     res.send(result); 
-})
+});
 
+app.delete("/destinations/:id", async (req, res) => {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid destination ID." });
+    }
+
+    try {
+        const result = await destinationCollection.deleteOne({
+            _id: new ObjectId(id),
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Destination not found." });
+        }
+
+        return res.json(result);
+    } catch (error) {
+        console.error("Failed to delete destination:", error);
+        return res.status(500).json({ message: "Failed to delete destination." });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running successfully at http://localhost:${PORT}`);
