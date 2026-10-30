@@ -93,3 +93,5 @@ npx eslint src/app/destinations/page.tsx src/components/destinations/Destination
 - Keep environment files and credentials out of version control.
 
 The Next.js app uses `src/app/` as its application root. The home page and some navigation destinations may still be under development.
+
+Testing
