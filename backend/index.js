@@ -242,6 +242,33 @@ app.post("/booking", async (req, res) => {
     }
 });
 
+app.get('/my-bookings/:email', async (req, res) => {
+    const {email} = req.params; 
+    const result = await bookingCollection.find({email: email}).toArray(); 
+    res.send(result); 
+})
+
+app.delete('/my-bookings/:id', async (req, res) => {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid booking ID." });
+    }
+
+    try {
+        const result = await bookingCollection.deleteOne({ _id: new ObjectId(id) });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Booking not found." });
+        }
+
+        return res.json({ deletedCount: result.deletedCount });
+    } catch (error) {
+        console.error("Failed to cancel booking:", error);
+        return res.status(500).json({ message: "Failed to cancel booking." });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running successfully at http://localhost:${PORT}`);
 }); 
