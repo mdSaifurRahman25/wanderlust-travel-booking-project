@@ -1,4 +1,4 @@
-
+"use client"
 import { cn } from "cn"
 
 import { Button } from "@/components/ui/button"
@@ -17,8 +17,29 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { redirect } from "next/navigation"
+import { authClient } from "@/lib/auth-client"
 
-export function SignInPage() {
+export function LoginPage() {
+   const handleEmailLogin = async (e:React.SubmitEvent<HTMLElement>) => {
+          e.preventDefault(); 
+          const formData = new FormData(e.target); 
+          const user = Object.fromEntries(formData.entries()) as {email: string, password: string} 
+          // console.log(user); 
+  
+          const {data, error} = await authClient.signIn.email({
+              ...user
+          }); 
+          if (data) {
+              // console.log(data); 
+              redirect("/")
+          }
+          if (error) {
+              console.log(error)
+          }
+      }
+
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto my-10">
       <Card>
@@ -29,7 +50,7 @@ export function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleEmailLogin}>
             <FieldGroup>
               <Field>
                 <Button variant="outline" type="button">
@@ -59,6 +80,7 @@ export function SignInPage() {
                 <Input
                   id="email"
                   type="email"
+                  name="email"
                   placeholder="m@example.com"
                   required
                 />
@@ -73,12 +95,12 @@ export function SignInPage() {
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <Link href={"/signup"}>Sign Up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
@@ -93,4 +115,4 @@ export function SignInPage() {
   )
 }
 
-export default SignInPage
+export default LoginPage; 

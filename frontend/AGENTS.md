@@ -8,118 +8,63 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Wanderlust travel booking
+# Wanderlust travel booking — frontend
 
-This repository is a small full-stack travel booking app:
-
-- The frontend is a Next.js App Router app in `frontend/`.
-- The backend is a standalone Express + MongoDB API in `backend/`.
-- Design references live in `frontend/b14-wanderlust-resources/` and are gitignored.
-
-Use `frontend/README.md` for startup instructions and the current API endpoints; this file captures the repo-specific rules that matter when editing the app.
-
-- Static frontend assets live in `frontend/public/images/` and are referenced as `/images/...`. Destination fallback images are in `frontend/public/images/destinations/`; the original design resources remain in `frontend/b14-wanderlust-resources/assets/`.
-- The destinations page fetches destination records from the backend and renders/filter/sorts them in `frontend/src/components/destinations/DestinationBrowser.tsx`.
-- Destination detail routes live at `frontend/src/app/destinations/[id]/page.tsx`. They fetch `/destinations/:id` and expect the backend JSON shape `{ result: Destination | null }`.
-- Cards link to a detail route using the MongoDB `_id` (or fallback `id`) when available. Keep route IDs URL-encoded and preserve the `ObjectId` string form returned by MongoDB.
-- `frontend/src/components/destinations/EditDestinationDialog.tsx` receives the current `Destination`, pre-fills its form, and updates it with `PUT /destinations/:id`. The backend expects the destination fields as JSON and returns `{ result: Destination }`; refresh the route after a successful update.
-- Shared destination, API response, and filter types belong in `frontend/src/types/index.ts`; reuse these types rather than redefining destination shapes in components.
-- Detail-page fields such as `reviewCount` and `highlights` are optional. Do not invent service guarantees or review counts when the API does not provide them; use truthful fallbacks based on available destination data.
-- The Edit dialog is implemented. Booking is not yet implemented; do not make the Book Now control actionable until a booking workflow exists.
-- The frontend uses npm and `package-lock.json`. Do not commit environment files or database credentials.
-
-## Repo-level architecture
-
-- `frontend/src/app/` holds the App Router pages and global site shell.
-- `frontend/src/components/` contains reusable page sections and destination UI.
-- `frontend/src/types/` centralizes shared TypeScript destination and filter models.
-- `backend/index.js` owns the MongoDB connection, route validation, and data write/read operations.
-- The backend stores destination data in the `WanderLust` database and `destination` collection.
+Next.js 16.4.3 App Router, React 19.3, TypeScript strict, Tailwind CSS 4. Repo-wide setup, environment, API contract, and commit rules are in the root `AGENTS.md`.
 
 ## Commands
 
-### Frontend
+Run from `frontend/`:
 
 ```bash
-cd frontend
 npm install
-npm run dev
+npm run dev      # http://localhost:3000
 npm run build
+npm run start
 npx tsc --noEmit
 npm run lint
 ```
 
-- There is no frontend test script. For focused validation, run ESLint on the files changed when possible:
+- No test runner. Verify with `npx tsc --noEmit` (passes) and focused lint on changed files, e.g. `npx eslint src/app/destinations/page.tsx src/components/destinations/DestinationBrowser.tsx`.
+- `npm run lint` has known failures in generated `src/components/ui/carousel.tsx` and `src/hooks/use-mobile.ts` (`react-hooks/set-state-in-effect`), plus unused `cn` warnings in `login/page.tsx` and `signup/page.tsx`.
+- The backend must be running at `http://localhost:8000` for `/destinations` and `/destinations/[id]` to render.
 
-```bash
-cd frontend
-npx eslint src/app/destinations/page.tsx src/components/destinations/DestinationBrowser.tsx
-```
+## Routes and data flow
 
-### Backend
+- `/destinations` is a Server Component that fetches `http://localhost:8000/destinations` with `cache: "no-store"` and passes the bare array to `DestinationBrowser`, which does category/price filtering and sorting client-side.
+- `/destinations/[id]` fetches `/destinations/:id` and expects `{ result: Destination | null }`. `params` is a Promise in Next 16 (`const { id } = await params`).
+- `BookingCard` (in `/destinations/[id]`) uses the better-auth session, requires a departure date, POSTs to `http://localhost:8000/booking`, and shows sonner toasts for success or failure.
+- `EditDestinationDialog` sends `PATCH /destinations/:id` (not PUT) and calls `router.refresh()` after success. `DeleteDestinationDialog` sends DELETE and requires `deletedCount === 1`, then navigates to `/destinations`.
+- `/add-destination` POSTs the form to `/add-destination`; the backend does no validation on that route.
+- Build detail links from `destination._id ?? destination.id` and always `encodeURIComponent` the ID.
 
-```bash
-cd backend
-npm install
-node index.js
-```
+## Auth
 
-Create `backend/.env` before running the API:
+- `src/lib/auth.ts` configures better-auth with the MongoDB adapter; `src/app/api/auth/[...all]/route.ts` exposes the handler.
+- `src/lib/auth-client.ts` provides client `authClient`, `signIn`, `signUp`, and `useSession`; `Navbar` renders the session and sign-out action.
+- `/login` and `/signup` use email/password. `/signin` was removed. Both pages need `MONGODB_URI`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL` in `frontend/.env`.
+- `Navbar` links to `/profile` and `/my-bookings`, but those pages do not exist yet.
 
-```env
-MONGODB_URI=your-mongodb-connection-string
-PORT=8000
-```
+## Conventions
 
-## Stack and conventions
-
-- Next.js 16.4.3 App Router, React 19.3, TypeScript strict, Tailwind CSS 4.
-- Tailwind is CSS-first: tokens live in `frontend/src/app/globals.css` (`@theme inline` + CSS variables). There is no `tailwind.config.*` or PostCSS config; CSS is compiled by `@tailwindcss/turbopack` via `frontend/next.config.ts`.
-- shadcn/ui uses the `base-nova` style with `@base-ui/react` primitives, not Radix. Composition uses `render={<Component />}`, not `asChild`. Prefer existing `frontend/src/components/ui/*`; add more with `npx shadcn add <name>` (writes there). Don't install Radix equivalents.
-- `cn` comes from the `cn` package; `frontend/src/lib/utils.ts` re-exports it. Generated UI imports it directly from `"cn"`.
 - Put page sections in `src/components/`, hooks in `src/hooks/`, helpers in `src/lib/`. Compose or wrap `src/components/ui/*` rather than editing generated primitives.
+- Shared `Destination`, filter, and API response types live in `src/types/index.ts`; import via `@/types` and do not redefine destination shapes.
+- `cn` comes from the `cn` package; `src/lib/utils.ts` re-exports it. Generated UI imports it directly from `"cn"`.
+- Tailwind is CSS-first: tokens live in `src/app/globals.css` (`@theme inline` + CSS variables). There is no `tailwind.config.*` or PostCSS config; `@tailwindcss/turbopack` is wired in `next.config.ts`.
+- shadcn uses the `base-nova` style with `@base-ui/react` primitives, not Radix. Composition uses `render={<Component />}`, not `asChild`. Add components with `npx shadcn add <name>`.
+- Keep static assets under `public/images/` and reference them as `/images/...`; destination fallbacks are in `public/images/destinations/`.
+- `reviewCount` and `highlights` are optional. Use truthful fallbacks; do not invent ratings, review counts, or service guarantees.
+- Booking is implemented in `BookingCard` via `POST /booking`; keep the shared `Booking` type in `src/types/index.ts` aligned with the backend payload.
 
 ## Next.js 16 gotchas
 
-- `frontend/next.config.ts` currently sets `cacheComponents: false` and `partialPrefetching: false`. Check the current config before relying on framework caching or partial prefetching behavior.
-- The destinations page is a Server Component and fetches the backend at request time with `cache: "no-store"` so destination changes are reflected on subsequent requests.
-- Don't add older route segment configs (`dynamic`, `revalidate`, `fetchCache`, `runtime`) or `experimental.ppr` without checking the bundled Next.js 16 documentation.
-- Read the bundled version-specific docs before adding routing/data code: `frontend/node_modules/next/dist/docs/01-app/02-guides/adopting-partial-prefetching.md` and `frontend/node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/cacheComponents.md`.
+- `next.config.ts` sets `cacheComponents: false` and `partialPrefetching: false`. Check the current config before relying on caching or prefetch behavior.
+- Don't add older route segment configs (`dynamic`, `revalidate`, `fetchCache`, `runtime`) or `experimental.ppr` without checking the bundled docs: `node_modules/next/dist/docs/01-app/02-guides/adopting-partial-prefetching.md` and `node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/cacheComponents.md`.
 - `LayoutProps<"/">` and `PageProps<"/...">` are global generated types in Next 16 — no import needed.
+- `next dev` rewrites the BEGIN/END block at the top of this file; commit it rather than deleting it.
 
-## Working rules for edits
+## Editing rules
 
-- When you change listing behavior, inspect both the frontend destination page and the backend `/destinations` routes together; the contract is split across them.
-- Keep route IDs URL-safe and preserve the MongoDB `_id` string form returned by the API.
-- Reuse the types in `frontend/src/types/index.ts` instead of creating duplicate destination shapes.
-- Do not commit `.env` files or database credentials.
-- The backend response shape is `{ result: Destination }` or `{ result: Destination | null }`, so frontend code should stay aligned with that contract.
-
-## Commit and push requirements
-
-When the user asks to commit and push, treat it as a full repository sync task:
-
-- Include all newly created, modified, and deleted files in the commit unless the user explicitly asks to exclude something.
-- Stage the repo as a whole, not only the files discussed in the current chat.
-- Push the result to every configured remote for this repository, including GitHub and GitLab, unless the user says otherwise.
-- Do not leave uncommitted changes behind when the user has asked for a commit/push workflow.
-- Preserve the repository state and avoid dropping unrelated user work while still ensuring the requested commit includes all relevant changes.
-- After pushing, confirm the remote update status for the repository remotes that are configured.
-
-
-| Command | Notes |
-| --- | --- |
-| `npm run dev` | Dev server at http://localhost:3000 |
-| `npm run build` | Production build (Turbopack); passes on the starter |
-| `npx tsc --noEmit` | Typecheck; passes. No `typecheck` script |
-| `npm run lint` | ESLint; known existing hook lint errors are in generated `src/components/ui/carousel.tsx` and `src/hooks/use-mobile.ts` (`react-hooks/set-state-in-effect`) |
-
-There is no frontend test script. Run focused ESLint checks on edited files when possible.
-
-## Next.js 16 gotchas
-
-- `next.config.ts` currently sets `cacheComponents: false` and `partialPrefetching: false`. Check the current config before relying on framework caching or partial prefetching behavior.
-- The destinations page is a Server Component and fetches the backend at request time with `cache: "no-store"` so destination changes are reflected on subsequent requests.
-- Don't add older route segment configs (`dynamic`, `revalidate`, `fetchCache`, `runtime`) or `experimental.ppr` without checking the bundled Next.js 16 documentation; APIs differ across Next versions.
-- Read the bundled version-specific docs before adding routing/data code: `node_modules/next/dist/docs/01-app/02-guides/adopting-partial-prefetching.md` and `node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/cacheComponents.md`.
-- `LayoutProps<"/">` and `PageProps<"/...">` are global generated types in Next 16 — no import needed.
+- Listing behavior is split across the frontend page/browser and the backend `/destinations` routes; inspect both when changing it.
+- Keep the response shapes aligned: list endpoints return arrays, detail and write responses use `{ result: ... }` or raw Mongo results as documented in the root `AGENTS.md`.
+- Don't commit `.env` files or credentials. Run typecheck and focused lint after changes.

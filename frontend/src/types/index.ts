@@ -29,6 +29,25 @@ export type DestinationDetailApiResponse = {
   result: Destination | null;
 };
 
+export type Booking = {
+  _id?: string;
+  destinationId: string | null;
+  destinationName: string;
+  country?: string;
+  price?: number | null;
+  duration?: string;
+  imageUrl?: string;
+  departureDate: string;
+  username: string;
+  email: string;
+  image?: string;
+  createdAt?: string;
+};
+
+export type BookingApiResponse = {
+  result: Booking;
+};
+
 export type DestinationPriceRange =
   | "all"
   | "under-1000"

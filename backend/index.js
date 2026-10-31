@@ -24,7 +24,8 @@ export async function connectToMongoDB() {
 
 const mongoClient = await connectToMongoDB();
 const db = mongoClient.db('WanderLust');
-const destinationCollection = db.collection('destination')
+const destinationCollection = db.collection('destination'); 
+const bookingCollection = db.collection('booking')
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
@@ -164,6 +165,66 @@ app.delete("/destinations/:id", async (req, res) => {
     } catch (error) {
         console.error("Failed to delete destination:", error);
         return res.status(500).json({ message: "Failed to delete destination." });
+    }
+});
+
+app.post("/booking", async (req, res) => {
+    const {
+        destinationId,
+        destinationName,
+        country,
+        price,
+        duration,
+        imageUrl,
+        departureDate,
+        username,
+        email,
+        image,
+    } = req.body;
+
+    if (
+        typeof destinationName !== "string" ||
+        destinationName.trim() === "" ||
+        typeof departureDate !== "string" ||
+        departureDate.trim() === "" ||
+        typeof username !== "string" ||
+        username.trim() === "" ||
+        typeof email !== "string" ||
+        email.trim() === ""
+    ) {
+        return res.status(400).json({ message: "Invalid booking data." });
+    }
+
+    if (destinationId && !ObjectId.isValid(destinationId)) {
+        return res.status(400).json({ message: "Invalid destination ID." });
+    }
+
+    try {
+        const booking = {
+            destinationId: destinationId ? new ObjectId(destinationId) : null,
+            destinationName,
+            country: typeof country === "string" ? country : "",
+            price:
+                typeof price === "number" && Number.isFinite(price)
+                    ? price
+                    : null,
+            duration: typeof duration === "string" ? duration : "",
+            imageUrl: typeof imageUrl === "string" ? imageUrl : "",
+            departureDate,
+            username,
+            email,
+            image: typeof image === "string" ? image : "",
+            createdAt: new Date(),
+        };
+
+        const result = await bookingCollection.insertOne(booking);
+
+        return res.status(201).json({
+            result: { _id: result.insertedId, ...booking },
+        });
+    } catch (error) {
+        console.error("Failed to create booking:", error);
+        return res.status(500).json({ message: "Failed to create booking." });
     }
 });
 

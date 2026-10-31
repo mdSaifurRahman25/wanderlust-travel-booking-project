@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
     ArrowLeft,
-    ArrowRight,
     CalendarDays,
     Check,
     MapPin,
@@ -12,6 +11,7 @@ import {
 import type { DestinationDetailApiResponse } from "@/types";
 import EditDestinationDialog from "@/components/destinations/EditDestinationDialog";
 import DeleteDestinationDialog from "@/components/destinations/DeleteDestinationDialog";
+import BookingCard from "@/components/booking/BookingCard";
 
 type DestinationDetailsPageProps = {
     params: Promise<{ id: string }>;
@@ -57,13 +57,8 @@ export default async function DestinationDetailsPage({
 
     const name =
         destination.destinationName || destination.name || "Travel destination";
-    const price =
-        typeof destination.price === "number"
-            ? destination.price
-            : Number.parseFloat(destination.price ?? "");
-    const formattedPrice = Number.isFinite(price)
-        ? `$${price.toLocaleString()}`
-        : "Contact us";
+   
+  
     const highlights = destination.highlights?.length
         ? destination.highlights
         : [
@@ -174,49 +169,9 @@ export default async function DestinationDetailsPage({
                         )}
                     </div>
 
-                    <aside className="h-fit border border-[#eeeeee] bg-white p-3 shadow-[0_1px_4px_rgba(0,0,0,0.12)] md:mt-0">
-                        <p className="text-[10px] text-[#777]">Starting from</p>
-                        <p className="text-[22px] font-semibold leading-tight text-brand">
-                            {formattedPrice}
-                        </p>
-                        {Number.isFinite(price) && (
-                            <p className="text-[10px] text-[#777]">per person</p>
-                        )}
+                    {/* Booking Card */}
+                    <BookingCard destination={destination} /> 
 
-                        <div className="mt-5 flex min-h-9 items-center gap-2 border border-[#eeeeee] bg-[#f8f9fa] px-2 text-[11px] text-[#333]">
-                            <CalendarDays className="size-3.5 text-[#777]" aria-hidden="true" />
-                            {destination.departureDate || "Flexible dates"}
-                        </div>
-
-                        <button
-                            type="button"
-                            disabled
-                            title="Online booking is not available yet."
-                            className="mt-2 flex h-9 w-full items-center justify-center gap-2 bg-brand px-3 text-[11px] font-medium text-white transition-colors hover:bg-brand-strong disabled:cursor-not-allowed"
-                        >
-                            Book Now
-                            <ArrowRight className="size-3.5" aria-hidden="true" />
-                        </button>
-
-                        <ul className="mt-3 space-y-1.5">
-                            {[
-                                "Destination details at a glance",
-                                "Departure information when available",
-                                "Price shown per person",
-                            ].map((benefit) => (
-                                <li
-                                    key={benefit}
-                                    className="flex items-start gap-1.5 text-[9px] leading-4 text-[#666]"
-                                >
-                                    <Check
-                                        className="mt-0.5 size-3 shrink-0 text-[#16a34a]"
-                                        aria-hidden="true"
-                                    />
-                                    {benefit}
-                                </li>
-                            ))}
-                        </ul>
-                    </aside>
                 </div>
             </article>
         </main>

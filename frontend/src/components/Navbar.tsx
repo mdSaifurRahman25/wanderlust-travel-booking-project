@@ -5,11 +5,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, User, X } from "lucide-react";
 import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "./ui/button";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/destinations", label: "Destinations" },
-  {href: "/add-destination", label: "Add Destination"},
+  { href: "/add-destination", label: "Add Destination" },
   { href: "/my-bookings", label: "My Bookings" },
 ];
 
@@ -30,6 +42,14 @@ function isActive(pathname: string, href: string) {
 export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  // console.log(user);
+
+  const handleSignout = () => {
+    authClient.signOut();
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white">
@@ -90,26 +110,54 @@ export default function Navbar() {
             <Link
               href="/profile"
               className={`flex items-center gap-1 text-base font-medium tracking-[0.005em] transition-colors hover:text-brand ${
-                isActive(pathname, "/profile")
-                  ? "text-brand"
-                  : "text-[#0c0b0b]"
+                isActive(pathname, "/profile") ? "text-brand" : "text-[#0c0b0b]"
               }`}
             >
               <User className="size-4" aria-hidden="true" />
               Profile
             </Link>
-            <Link
-              href="/login"
-              className="text-base font-medium tracking-[0.005em] text-[#0c0b0b] transition-colors hover:text-brand"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="text-base font-medium tracking-[0.005em] text-[#0c0b0b] transition-colors hover:text-brand"
-            >
-              Sign Up
-            </Link>
+
+            {user ? (
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <Avatar>
+                      <AvatarImage
+                        referrerPolicy="no-referrer"
+                        src={user?.image as string}
+                      />
+                      <AvatarFallback>{user?.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  }
+                ></PopoverTrigger>
+                <PopoverContent>
+                  <PopoverHeader>
+                    <PopoverTitle>{user?.name}</PopoverTitle>
+                    <PopoverDescription>
+                      <p>{user?.email}</p>
+                      <Button onClick={handleSignout} variant={"destructive"}>
+                        Sign Out
+                      </Button>
+                    </PopoverDescription>
+                  </PopoverHeader>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-base font-medium tracking-[0.005em] text-[#0c0b0b] transition-colors hover:text-brand"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="text-base font-medium tracking-[0.005em] text-[#0c0b0b] transition-colors hover:text-brand"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           <Link
@@ -144,7 +192,6 @@ export default function Navbar() {
             ))}
 
             <div className="my-2 h-px bg-black/5" />
-
             {accountLinks.map((link) => (
               <Link
                 key={link.href}

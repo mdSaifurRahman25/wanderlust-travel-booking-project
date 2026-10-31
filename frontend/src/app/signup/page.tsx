@@ -25,16 +25,16 @@ import { redirect } from "next/navigation"
 
 export function SignUpPage() {
     const handleEmailSignUp = async (e:React.SubmitEvent<HTMLElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const user = Object.fromEntries(formData.entries()) as {name: string, image: string, email: string, password: string}
-        // console.log(user);
+        e.preventDefault(); 
+        const formData = new FormData(e.target); 
+        const user = Object.fromEntries(formData.entries()) as {name: string, image: string, email: string, password: string} 
+        // console.log(user); 
 
         const {data, error} = await authClient.signUp.email({
             ...user
-        });
+        }); 
         if (data) {
-            // console.log(data);
+            // console.log(data); 
             redirect("/")
         }
         if (error) {
