@@ -72,7 +72,7 @@ Current API surface:
 - `PUT /destinations/:id` validates destination data and updates the record
 - `PATCH /destinations/:id` updates fields
 - `DELETE /destinations/:id` removes a record
-- `POST /booking` validates a booking payload and inserts into the `booking` collection, returning 201 `{ result: Booking }`
+- `POST /booking` validates a booking payload and inserts into the `booking` collection, returning 201 `{ result: Booking }`; duplicate user/destination/date requests return 409
 
 ## Key conventions and repo-specific rules
 

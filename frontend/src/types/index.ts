@@ -31,7 +31,7 @@ export type DestinationDetailApiResponse = {
 
 export type Booking = {
   _id?: string;
-  destinationId: string | null;
+  destinationId: string;
   destinationName: string;
   country?: string;
   price?: number | null;

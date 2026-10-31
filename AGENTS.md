@@ -57,7 +57,7 @@ Both apps use the same MongoDB database, `WanderLust`. The backend reads/writes 
 - `PATCH /destinations/:id` → raw Mongo update result, no validation; the Edit dialog uses PATCH, not PUT
 - `PUT /destinations/:id` → validated full update, returns `{ result: Destination }`
 - `DELETE /destinations/:id` → raw Mongo delete result; the UI requires `deletedCount === 1`
-- `POST /booking` → validated insert into the `booking` collection, returns 201 `{ result: Booking }`
+- `POST /booking` → validated insert into the `booking` collection, returns 201 `{ result: Booking }`; a duplicate user/destination/date returns 409 `{ message }`
 - IDs are MongoDB `ObjectId` strings. Keep them URL-encoded and preserve the string form returned by the API.
 
 ## Conventions and gotchas

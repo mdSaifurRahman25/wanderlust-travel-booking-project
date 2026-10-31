@@ -54,7 +54,7 @@ npm run lint
 - shadcn uses the `base-nova` style with `@base-ui/react` primitives, not Radix. Composition uses `render={<Component />}`, not `asChild`. Add components with `npx shadcn add <name>`.
 - Keep static assets under `public/images/` and reference them as `/images/...`; destination fallbacks are in `public/images/destinations/`.
 - `reviewCount` and `highlights` are optional. Use truthful fallbacks; do not invent ratings, review counts, or service guarantees.
-- Booking is implemented in `BookingCard` via `POST /booking`; keep the shared `Booking` type in `src/types/index.ts` aligned with the backend payload.
+- Booking is implemented in `BookingCard` via `POST /booking`; keep the shared `Booking` type in `src/types/index.ts` aligned with the backend payload. The button locks after a successful booking, and duplicates return 409.
 
 ## Next.js 16 gotchas
 

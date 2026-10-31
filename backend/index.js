@@ -195,13 +195,13 @@ app.post("/booking", async (req, res) => {
         return res.status(400).json({ message: "Invalid booking data." });
     }
 
-    if (destinationId && !ObjectId.isValid(destinationId)) {
+    if (typeof destinationId !== "string" || !ObjectId.isValid(destinationId)) {
         return res.status(400).json({ message: "Invalid destination ID." });
     }
 
     try {
         const booking = {
-            destinationId: destinationId ? new ObjectId(destinationId) : null,
+            destinationId: new ObjectId(destinationId),
             destinationName,
             country: typeof country === "string" ? country : "",
             price:
@@ -217,10 +217,24 @@ app.post("/booking", async (req, res) => {
             createdAt: new Date(),
         };
 
-        const result = await bookingCollection.insertOne(booking);
+        const result = await bookingCollection.updateOne(
+            {
+                email,
+                destinationId: booking.destinationId,
+                departureDate,
+            },
+            { $setOnInsert: booking },
+            { upsert: true }
+        );
+
+        if (result.upsertedCount === 0) {
+            return res.status(409).json({
+                message: "You already booked this destination for that date.",
+            });
+        }
 
         return res.status(201).json({
-            result: { _id: result.insertedId, ...booking },
+            result: { _id: result.upsertedId, ...booking },
         });
     } catch (error) {
         console.error("Failed to create booking:", error);
