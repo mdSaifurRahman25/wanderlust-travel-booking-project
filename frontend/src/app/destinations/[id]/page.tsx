@@ -12,6 +12,8 @@ import type { DestinationDetailApiResponse } from "@/types";
 import EditDestinationDialog from "@/components/destinations/EditDestinationDialog";
 import DeleteDestinationDialog from "@/components/destinations/DeleteDestinationDialog";
 import BookingCard from "@/components/booking/BookingCard";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 type DestinationDetailsPageProps = {
     params: Promise<{ id: string }>;
@@ -21,9 +23,19 @@ export default async function DestinationDetailsPage({
     params,
 }: DestinationDetailsPageProps) {
     const { id } = await params;
+
+    const jwtToken = await auth.api.getToken({
+        headers: await headers(),
+    });
+
     const response = await fetch(
         `http://localhost:8000/destinations/${encodeURIComponent(id)}`,
-        { cache: "no-store" }
+        {
+            cache: "no-store",
+            headers: jwtToken?.token
+                ? { authorization: `Bearer ${jwtToken.token}` }
+                : undefined,
+        }
     );
 
     if (response.status === 404) {

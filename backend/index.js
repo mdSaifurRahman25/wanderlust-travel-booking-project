@@ -25,7 +25,12 @@ export async function connectToMongoDB() {
 const mongoClient = await connectToMongoDB();
 const db = mongoClient.db('WanderLust');
 const destinationCollection = db.collection('destination'); 
-const bookingCollection = db.collection('booking')
+const bookingCollection = db.collection('booking'); 
+
+const logAuthHeader = (req, res, next) => {
+    console.log('Authorization header:', req.headers.authorization);
+    next();
+}
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
@@ -112,7 +117,7 @@ app.get("/destinations", async (req, res) => {
 });
 
 
-app.get("/destinations/:id", async (req, res) => {
+app.get("/destinations/:id", logAuthHeader, async (req, res) => {
     const { id } = req.params;
 
     if (!ObjectId.isValid(id)) {
@@ -272,3 +277,4 @@ app.delete('/my-bookings/:id', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running successfully at http://localhost:${PORT}`);
 }); 
+
