@@ -140,7 +140,7 @@ app.get("/destinations/:id", logAuthHeader, async (req, res) => {
 
 app.patch("/destinations/:id", async (req, res) => {
     // const {id} = req.params; 
-    const id = req.params.id; // collecting id from URL endpoint
+    const {id} = req.params.id; // collecting id from URL endpoint
     const data = req.body; // collecting new data from frontend Form 
 
     const result = await destinationCollection.updateOne(
@@ -274,7 +274,10 @@ app.delete('/my-bookings/:id', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running successfully at http://localhost:${PORT}`);
-}); 
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
 
+export default app;
